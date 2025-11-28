@@ -29,6 +29,15 @@ use smallDogs;
             commonColors: [ "Black", "Cream", "Gold", "Red"]
             },
 
+        {
+            name: "Pug",
+            origin: "China",
+            height: { min: 25, max: 36, unit: "cm"},
+            weight: { min: 6.35, max: 8.16, unit: "kg"},
+            lifeExpectancy: { min: 12, max: 15, unit: "years"},
+            commonColors: [ "Fawn", "Black", "Silver", "Apricot"]
+            },
+
         ]);
 
     db.smallDogs.insertOne(
@@ -69,7 +78,16 @@ use smallDogs;
 
     db.smallDogs.createIndex( { name: 1}, {unique: true })
 
-    **Kan ej lägga in pga unikt index
+    // Kan ej lägga in pga unikt index
 
     db.smallDogs.insertOne( { name: "Pomeranian"})
 
+    db.smallDogs.updateMany( {}, { $set: { favorite: false }})
+
+    db.smallDogs.updateMany( { name: { $in: ["Pomeranian", "Shih Tzu" ]}}, { $set: { favorite: true }} )
+
+    db.smallDogs.updateMany( { favorite: true}, { $set: { shouldPurchase: true }})
+
+    db.smallDogs.countDocuments( { favorite: true })
+
+    db.smallDogs.find( { favorite: true}, { name: 1, _id: 0, origin: 1, lifeExpectancy: 1 }).sort( { "lifeExpectancy.min":1 })

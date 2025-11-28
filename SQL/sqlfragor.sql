@@ -86,6 +86,9 @@ INSERT INTO Skadespelare (skadespelareNamn, skadespelareFodd, skadespelareNation
 ('Emma Watson', '1990-04-15', 'Storbritannien'),
 ('Brad Pitt', '1963-12-18', 'USA');
 
+
+-- SAVE TRAN förkortning istället för TRANSACTION, samma funktionalitet
+
 SAVE TRAN steg2;
 
 INSERT INTO Film (filmGenreId, filmRegissorId, filmTitel, filmAr, filmBudget) VALUES
@@ -188,7 +191,7 @@ BEGIN
 
 SET NOCOUNT ON;
 
-INSERT INTO Logg_AllaaTabeller (tabellNamn, postId, operationTyp, gamlaVarden, nyaVarden)
+INSERT INTO Logg_AllaTabeller (tabellNamn, postId, operationTyp, gamlaVarden, nyaVarden)
 SELECT
 'Skadespelare',
 d.skadespelareId,
@@ -210,7 +213,7 @@ BEGIN
 
 SET NOCOUNT ON;
 
-INSERT INTO Logg_AllaaTabeller (tabellNamn, postId, operationTyp, gamlaVarden, nyaVarden)
+INSERT INTO Logg_AllaTabeller (tabellNamn, postId, operationTyp, gamlaVarden, nyaVarden)
 SELECT
 'Genre',
 i.genreId,

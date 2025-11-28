@@ -1,0 +1,58 @@
+- Syftet med databaserna
+
+SQL
+
+* Grundstruktur för vertikalt skalbar databas av filmer med referensintegritet och stark struktur.
+* Mycket hög säkerhet men prestanda kan begränsas av körning på en primär server.
+* Förhållande many-to-many mellan filmer och skådespelare för att snabbt kunna hämta och överblicka statistik kring skådespelares
+deltagande i olika filmer.
+* Ytterligare kompletterande data med regissör och filmgenre. Trigger efter borttagning av skådespelare:
+
+CREATE TRIGGER trg_delete_skadespelare ON Skadespelare AFTER DELETE AS BEGIN SET NOCOUNT ON; INSERT INTO Logg_AllaaTabeller (tabellNamn, postId, operationTyp, gamlaVarden,
+nyaVarden) SELECT 'Skadespelare', d.skadespelareId, 'DELETE', 'Namn: ' + d.skadespelareNamn + '; Fodd: ' + CAST(d.skadespelareFodd AS VARCHAR(20)) + '; Nationalitet: ' +
+d.skadespelareNationalitet, NUll FROM deleted d; END;
+
+* Vid delete på märkt tabell insert i loggtabell med efterföljande selektade värden. CAST för DATE + namn, nationalitet för gamla värden på raderad skådespelare.
+
+Stored procedured för databasöversikt med joins samt STRING_AGG vid flera skådespelare per filmtitel:
+
+CREATE PROCEDURE databas_oversikt
+AS
+BEGIN
+
+SELECT f.filmTitel AS Titel, r.regissorNamn AS Regissör, g.genreNamn AS Genre, STRING_AGG(s.skadespelareNamn, ', ') AS Skådespelare
+FROM Film f
+INNER JOIN Regissor r ON f.filmRegissorId = r.regissorId
+INNER JOIN Genre g ON f.filmGenreId = g.genreId
+INNER JOIN FilmSkadespelare fs ON f.filmId = fs.filmSkadespelareFid
+INNER JOIN Skadespelare s ON fs.filmSkadespelareSid = s.skadespelareId
+
+--Gruppering av aggregate-värde per unik tripplett
+
+GROUP BY f.filmTitel, r.regissorNamn, g.genreNamn
+ORDER BY Titel ASC;
+
+END;
+
+MongoDB
+
+* Horisontellt skalbar databas med stor flexbilitet i ett distribuerat system av databasklustrer och servrar.
+* Hög tillgänglighet och hög prestanda med flera datanoder i databasklustret.
+* Datasäkerhet kan variera beroende på programmering.
+
+Exempel på tilläggning av värden i ett dokuments egenskap som är av typ array:
+
+db.smallDogs.updateOne( { name: "Pomeranian"}, { $pull: { commonColors: "White"},
+        $push: { commonColors: "Sable"}})
+
+Skapa dokumentkategorisering med favoritegenskap/attribut:
+
+db.smallDogs.updateMany( {}, { $set: { favorite: false }})
+
+    db.smallDogs.updateMany( { name: { $in: ["Pomeranian", "Shih Tzu" ]}}, { $set: { favorite: true }} )
+
+    db.smallDogs.updateMany( { favorite: true}, { $set: { shouldPurchase: true }})
+
+    db.smallDogs.countDocuments( { favorite: true })
+
+    db.smallDogs.find( { favorite: true}, { name: 1, _id: 0, origin: 1, lifeExpectancy: 1 }).sort( { "lifeExpectancy.min":1 })
